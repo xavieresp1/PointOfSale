@@ -1,8 +1,8 @@
 package pointOfSale;
 
-//had some problems accessing the element within an array, so I have used
-//this import to help with accessing the values.
-import java.lang.reflect.Array; 
+//I have neither given nor received unauthorized aid in
+//completing this work, nor have I presented someone else's work as my own. - Xavier Espinoza
+
 import java.util.Scanner;
 import java.util.*;
 
@@ -11,95 +11,125 @@ public class pointOfSale {
 	public static void main(String[] args) {
 		
 		final int EXIT = -1;
-		
+		int choiceInt = 0;
 		Scanner input = new Scanner(System.in);
 		
 		foodItem [] order ={};
-		
-		
+		int selection = 0;
 		Catalog catalog = new Catalog();
 		
-		
-		System.out.println("This is the catalog of the items in our store!");
-		
-		catalog.DisplayCatalog();
-		
-		//The while & switch structures here will build the order for the customer,
-		//as well as take count of the quantity of each item the customer would like to buy
-		System.out.println("Please enter the items that you would like to purchase, or enter 0 to end the transaction.");
-		System.out.println("Enter the item ID:");
-		
+
 		boolean correctInput = false;
 		
-		while(!correctInput){
-			
-		  try{
-		    int choice = input.nextInt();
-		    
-		    correctInput = true;
-		    
-		    choice -= 1;
-		    
-		    if(choice != -1) {
-		    	
-		    	System.out.println("How many "+ catalog.getName(choice) + "(s) would you like to buy?");
-		    	
-		    	int quantity = input.nextInt();
-		    	
-		    	foodItem newItem = new foodItem(choice,quantity);
-		    	
-		    	order = addItem(order);
-		    	
-		    	order[order.length-1] = newItem;
-		    	while(choice != -1) {
-		    		
-		    		catalog.DisplayCatalog();
-		    		
-		    		System.out.println("Please enter the ID of the next item you would like to buy, or 0 to finish the transaction");
-		    		
-		    		choice = input.nextInt();
-		    		choice -=1; 
-		    		if(choice != -1) {
-		    			System.out.println("How many "+ catalog.getName(choice) + "(s) would you like to buy?");
-				    	
-				    	int quantity1 = input.nextInt();
-				    	
-				    	foodItem newItem1 = new foodItem(choice,quantity1);
-				    	
-				    	order = addItem(order);
-				    	
-				    	order[order.length-1] = newItem1;
-		    		}
-		    		else {
-		    			System.out.println("You have chosen to finish the transaction");
-		    			Receipt receipt = new Receipt(order);
-		    			receipt.DisplayReceipt();
-		    		}
-		    	}
-		    }
-		    else {
-		    	System.out.println("You have chosen to not buy anything.");
-		    }
-		    
-		  }catch(Exception e){
-			 System.out.println("Please enter an integer as your selection");
-		     continue;
-		  }
-
+		//get the name of the user
+		System.out.println("What is your name?");
+		String name = input.next();
+		
+		//main menu, allows user to choose to add an item,
+		//an admin to enter an item to the catalog
+		//or exit the terminal & get their receipt.
+		System.out.println("1. Enter which item you would like to purchase ");
+		System.out.println("2. Admin-supervised addition to the catalog");
+		System.out.println("3. Finish Transaction");
+		String choice = input.next();
+		
+		while(choiceInt != 3) {
+			//Any time ValidityEnforcement is written, it is validating the user's input, 
+			//making sure it is an int. Then it returns that int. 
+			choiceInt = ValidityEnforcement(choice);
+			switch(choiceInt) {//8
+			case 1:
+				catalog.DisplayCatalog();
+				
+				//allow user to select an item
+				System.out.println("Please enter the ID of the item you would like to purchase, ");
+				System.out.println("or enter 0 to finish your transaction: ");
+				String UInput = input.next();
+				int item = ValidityEnforcement(UInput);
+				if(item!= 0) {
+					item-=1;//subtract by 1 to correctly index the right item in the catalog array
+					
+					//collect quantity of this item
+					System.out.println("Please enter how many " + catalog.getName(item)+ "(s)");
+					UInput = input.next();
+					int quant = ValidityEnforcement(UInput);
+					//create a new food item, then add it to the order
+					foodItem newItem = new foodItem(item,quant,catalog);
+					order = addItem(order);
+					order[order.length-1] = newItem;
+					System.out.println("Item(s) purchased.");
+					
+					//re-enter the main menu
+					System.out.println("1. Enter which item you would like to purchase ");
+					System.out.println("2. Admin-supervised addition to the catalog");
+					System.out.println("3. Finish Transaction");
+					choice = input.next();
+					
+				}
+				else {//if selection is 0, exit to main menu
+					System.out.println("Exiting to main menu");
+					System.out.println("1. Enter which item you would like to purchase ");
+					System.out.println("2. Admin-supervised addition to the catalog");
+					System.out.println("3. Finish Transaction");
+					choice = input.next();
+				}
+				break;
+			case 2:
+				//admin entering an item
+				//collect the password
+				System.out.println("Please enter the passcode: ");
+				String passCode = input.next();
+				//call AddItem, and when they're finished adding items, return to the main menu
+				catalog.AddItem(passCode);
+				System.out.println("1. Enter which item you would like to purchase ");
+				System.out.println("2. Admin-supervised addition to the catalog");
+				System.out.println("3. Finish Transaction");
+				choice = input.next();
+				break;
+			case 3:
+				//create a new receipt, use the constructor to take in the order
+				//and the name of the user.
+				Receipt receipt2 = new Receipt(order,name);
+				//display the receipt
+				receipt2.DisplayReceipt();
+				break;
+			default:
+				//if choice is not 1, 2, or 3, give the user another chance to enter a correct
+				//input.
+				System.out.println("Please enter 1,2, or 3");
+				System.out.println("1. Enter which item you would like to purchase ");
+				System.out.println("2. Admin-supervised addition to the catalog");
+				System.out.println("3. Finish Transaction");
+				choice = input.next();
+				break;
+			}
+					
 		}
 		
-		
-		//determine the method of payment, store in a bool to be used by the receipt method
-		
-			
-		//call the method receipt, which will take in an array of integers, an array of item quantities,
-		//and a boolean for the payment plan option
-		//the integers correspond to an item within the catalog, the quantities will be used to determine price &
-		//discounts, and the payment plan boolean will determine how they pay & if they get the full payment
-		// discount.
-	}
-	
 
+}
+
+//this function checks if a string is an int and returns that int
+//if it is not an int, keep prompting for input until input is an int
+public static int ValidityEnforcement(String choice) {
+	Scanner input = new Scanner(System.in);
+	int temp = 0;
+	boolean correctInput = false;
+	while(!correctInput) {//1
+		correctInput = true;
+		correctInput = isNumeric(choice);
+		if(!correctInput) {//2
+			System.out.println("Please enter a valid action");
+			choice = input.next();
+			}
+		else {
+			correctInput = true;
+			temp = Integer.parseInt(choice);
+		}
+	}
+	return temp;
+	}
+//increase the size of a foodItem list
 public static foodItem[] addItem(foodItem[] array) {
 	   foodItem[] temp = new foodItem[array.length + 1];
 	   for (int i = 0; i < array.length; i++){
@@ -107,10 +137,10 @@ public static foodItem[] addItem(foodItem[] array) {
 	   }
 	   return temp;
 	}
-
+//check if a string is an int
 public static boolean isNumeric(String string) {
     int intValue;
-		
+	
     if(string == null || string.equals("")) {
         return false;
     }
@@ -118,10 +148,8 @@ public static boolean isNumeric(String string) {
         intValue = Integer.parseInt(string);
         return true;
     } catch (NumberFormatException e) {
-        System.out.println("Please enter an integer");
     }
     return false;
 }
 }
-//I have neither given nor received unauthorized aid in
-//completing this work, nor have I presented someone else's work as my own. - Xavier Espinoza
+
